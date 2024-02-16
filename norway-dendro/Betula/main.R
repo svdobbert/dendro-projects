@@ -8,7 +8,7 @@
 options(scipen = 999)  # turns of scientific notations
 
 ## set working directory
-dir <- "~/Documents/Data/Betula_BRT/output/" # set directory for output
+dir <- "~/workspaces/dendro/norway-dendro/Betula/output/" # set directory for output
 setwd(dir)
 
 # load all dependencies
@@ -34,3 +34,5 @@ source("../preperation/constants.R")
 source("../preperation/detrending.R")
 # create input
 source("../preperation/create-data.R")
+# create model functions
+source("../preperation/model-functions.R")
