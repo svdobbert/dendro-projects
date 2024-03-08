@@ -38,157 +38,126 @@ modelTrain <- function(input) {
 }
 
 createModel <- function(input) {
-# input <- input[[2]]
-input <- input[-c(1:3)]
-modelOutput <- modelTrain(input)
-model <- modelOutput[[1]]
-training <- modelOutput[[2]]
-testing <- modelOutput[[3]]
-print(model)
-print(summary(model))
+    # input <- input[[2]]
+    input <- input[-c(1:3)]
+    modelOutput <- modelTrain(input)
+    model <- modelOutput[[1]]
 
-## Model testing
-# subset test data
+    # When using boosted regression trees, the relative importance of predictor variables is calculated based on the number of times a variable is selected in the model, weighted by its improvement to the overall model (Friedman 2001; Elith et al. 2008).
 
-test.features <- subset(testing, select = -c(RingWidth))
-test.target <- subset(testing, select = RingWidth)[, 1]
+    # get selected arguments
+    nTrees <- model$bestTune["n.trees"]
+    interactionDepth <- model$bestTune["interaction.depth"]
+    shrinkage <- model$bestTune["shrinkage"]
+    nMinobsinnode <- model$bestTune["n.minobsinnode"]
 
-predictions <- predict(model, newdata = test.features)
-# RMSE
-print(sqrt(mean((test.target - predictions)^2)))
-# R2
-print(cor(test.target, predictions)^2)
-plot(model)
-model
-View(summary(model))
+    # final model using selected arguments from training model
+    # input <- as.data.frame(sapply(input, function(x) as.numeric(x)))
+    finalModel <- gbm(RingWidth ~ .,
+        distribution = "gaussian",
+        data = input,
+        n.trees = nTrees[1][1, ],
+        interaction.depth = interactionDepth[1][1, ],
+        shrinkage = shrinkage,
+        n.minobsinnode = nMinobsinnode,
+        cv.folds = 10,
+    )
 
-# When using boosted regression trees, the relative importance of predictor variables is calculated based on the number of times a variable is selected in the model, weighted by its improvement to the overall model (Friedman 2001; Elith et al. 2008).
+    ## Step 1
+    # remove variables with little importance
+    threshold <- 1
+    reducedModel <- subset(summary(finalModel), summary(finalModel)$rel.inf > threshold)
+    var <- reducedModel$var
 
-# get selected arguments
-nTrees <- model$bestTune["n.trees"]
-interactionDepth <- model$bestTune["interaction.depth"]
-shrinkage <- model$bestTune["shrinkage"]
-nMinobsinnode <- model$bestTune["n.minobsinnode"]
+    input_reduced <- as.data.frame(cbind(RingWidth = input$RingWidth, input[var]))
 
-# final model using selected arguments from training model
-# input <- as.data.frame(sapply(input, function(x) as.numeric(x)))
-finalModel <- gbm(RingWidth ~ .,
-    distribution = "gaussian",
-    data = input,
-    n.trees = nTrees[1][1, ],
-    interaction.depth = interactionDepth[1][1, ],
-    shrinkage = shrinkage,
-    n.minobsinnode = nMinobsinnode,
-    cv.folds = 10,
-)
-summary(finalModel)
+    modelOutput <- modelTrain(input_reduced)
+    model <- modelOutput[[1]]
+
+    # get selected arguments
+    nTrees <- model$bestTune["n.trees"]
+    interactionDepth <- model$bestTune["interaction.depth"]
+    shrinkage <- model$bestTune["shrinkage"]
+    nMinobsinnode <- model$bestTune["n.minobsinnode"]
+
+    # final model using selected arguments from training model
+    # input <- as.data.frame(sapply(input, function(x) as.numeric(x)))
+    finalModel2 <- gbm(RingWidth ~ .,
+        distribution = "gaussian",
+        data = input_reduced,
+        n.trees = nTrees[1][1, ],
+        interaction.depth = interactionDepth[1][1, ],
+        shrinkage = shrinkage,
+        n.minobsinnode = nMinobsinnode,
+        cv.folds = 10,
+    )
+
+    ## Step 2
+    # remove variables with little importance
+    threshold <- 1
+    reducedModel <- subset(summary(finalModel2), summary(finalModel2)$rel.inf > threshold)
+    var <- reducedModel$var
+
+    input_reduced <- as.data.frame(cbind(RingWidth = input_reduced$RingWidth, input_reduced[var]))
+
+    modelOutput <- modelTrain(input_reduced)
+    model <- modelOutput[[1]]
+
+    # When using boosted regression trees, the relative importance of predictor variables is calculated based on the number of times a variable is selected in the model, weighted by its improvement to the overall model (Friedman 2001; Elith et al. 2008).
+
+    # get selected arguments
+    nTrees <- model$bestTune["n.trees"]
+    interactionDepth <- model$bestTune["interaction.depth"]
+    shrinkage <- model$bestTune["shrinkage"]
+    nMinobsinnode <- model$bestTune["n.minobsinnode"]
+
+    # final model using selected arguments from training model
+    # input <- as.data.frame(sapply(input, function(x) as.numeric(x)))
+    finalModel3 <- gbm(RingWidth ~ .,
+        distribution = "gaussian",
+        data = input_reduced,
+        n.trees = nTrees[1][1, ],
+        interaction.depth = interactionDepth[1][1, ],
+        shrinkage = shrinkage,
+        n.minobsinnode = nMinobsinnode,
+        cv.folds = 10,
+    )
 
 
-# find index for number trees with minimum CV error
-best <- which.min(finalModel$cv.error)
-best
-# get MSE and compute RMSE
-sqrt(finalModel$cv.error[best])
-# plot error curve
-gbm.perf(finalModel, method = "cv")
+    ## Step 3
+    # remove variables with little importance
+    threshold <- 1
+    reducedModel <- subset(summary(finalModel3), summary(finalModel3)$rel.inf > threshold)
+    var <- reducedModel$var
 
-## Step 1
-# remove variables with little importance
-threshold <- 1
-reducedModel <- subset(summary(finalModel), summary(finalModel)$rel.inf > threshold)
-var <- reducedModel$var
+    input_reduced <- as.data.frame(cbind(RingWidth = input_reduced$RingWidth, input_reduced[var]))
 
-input_reduced <- as.data.frame(cbind(RingWidth = input$RingWidth, input[var]))
+    modelOutput <- modelTrain(input_reduced)
+    model <- modelOutput[[1]]
+    training <- modelOutput[[2]]
+    testing <- modelOutput[[3]]
 
-modelOutput <- modelTrain(input_reduced)
-model <- modelOutput[[1]]
-training <- modelOutput[[2]]
-testing <- modelOutput[[3]]
-print(model)
-print(summary(model))
+    # When using boosted regression trees, the relative importance of predictor variables is calculated based on the number of times a variable is selected in the model, weighted by its improvement to the overall model (Friedman 2001; Elith et al. 2008).
 
-## Model testing
-# subset test data
+    # get selected arguments
+    nTrees <- model$bestTune["n.trees"]
+    interactionDepth <- model$bestTune["interaction.depth"]
+    shrinkage <- model$bestTune["shrinkage"]
+    nMinobsinnode <- model$bestTune["n.minobsinnode"]
 
-test.features <- subset(testing, select = -c(RingWidth))
-test.target <- subset(testing, select = RingWidth)[, 1]
-
-predictions <- predict(model, newdata = test.features)
-# RMSE
-print(sqrt(mean((test.target - predictions)^2)))
-# R2
-print(cor(test.target, predictions)^2)
-plot(model)
-model
-View(summary(model))
-
-# When using boosted regression trees, the relative importance of predictor variables is calculated based on the number of times a variable is selected in the model, weighted by its improvement to the overall model (Friedman 2001; Elith et al. 2008).
-
-# get selected arguments
-nTrees <- model$bestTune["n.trees"]
-interactionDepth <- model$bestTune["interaction.depth"]
-shrinkage <- model$bestTune["shrinkage"]
-nMinobsinnode <- model$bestTune["n.minobsinnode"]
-
-# final model using selected arguments from training model
-# input <- as.data.frame(sapply(input, function(x) as.numeric(x)))
-finalModel2 <- gbm(RingWidth ~ .,
-    distribution = "gaussian",
-    data = input_reduced,
-    n.trees = nTrees[1][1,],
-    interaction.depth = interactionDepth[1][1,],
-    shrinkage = shrinkage,
-    n.minobsinnode = nMinobsinnode,
-    cv.folds = 10,
-)
-
-## Step 2
-# remove variables with little importance
-threshold <- 1
-reducedModel <- subset(summary(finalModel), summary(finalModel)$rel.inf > threshold)
-var <- reducedModel$var
-
-input_reduced <- as.data.frame(cbind(RingWidth = input_reduced$RingWidth, input_reduced[var]))
-
-modelOutput <- modelTrain(input_reduced)
-model <- modelOutput[[1]]
-training <- modelOutput[[2]]
-testing <- modelOutput[[3]]
-
-## Model testing
-# subset test data
-
-test.features <- subset(testing, select = -c(RingWidth))
-test.target <- subset(testing, select = RingWidth)[, 1]
-
-predictions <- predict(model, newdata = test.features)
-# RMSE
-print(sqrt(mean((test.target - predictions)^2)))
-# R2
-print(cor(test.target, predictions)^2)
-plot(model)
-model
-View(summary(model))
-
-# When using boosted regression trees, the relative importance of predictor variables is calculated based on the number of times a variable is selected in the model, weighted by its improvement to the overall model (Friedman 2001; Elith et al. 2008).
-
-# get selected arguments
-nTrees <- model$bestTune["n.trees"]
-interactionDepth <- model$bestTune["interaction.depth"]
-shrinkage <- model$bestTune["shrinkage"]
-nMinobsinnode <- model$bestTune["n.minobsinnode"]
-
-# final model using selected arguments from training model
-# input <- as.data.frame(sapply(input, function(x) as.numeric(x)))
-finalModel3 <- gbm(RingWidth ~ .,
-    distribution = "gaussian",
-    data = input_reduced,
-    n.trees = nTrees[1][1,],
-    interaction.depth = interactionDepth[1][1,],
-    shrinkage = shrinkage,
-    n.minobsinnode = nMinobsinnode,
-    cv.folds = 10,
-)
-
-finalModel3
+    # final model using selected arguments from training model
+    # input <- as.data.frame(sapply(input, function(x) as.numeric(x)))
+    finalModel4 <- gbm(RingWidth ~ .,
+        distribution = "gaussian",
+        data = input_reduced,
+        n.trees = nTrees[1][1, ],
+        interaction.depth = interactionDepth[1][1, ],
+        shrinkage = shrinkage,
+        n.minobsinnode = nMinobsinnode,
+        cv.folds = 10,
+    )
+    output <- list(
+        finalModel4, training, testing
+    )
+    output
 }
