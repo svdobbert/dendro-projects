@@ -339,6 +339,7 @@ View(relative_importance)
 
 # Create Plot
 # how ring width (y axis) changes as a function of the variable in question
+inputRelativeImportance <- relative_importance
 relative_importance <- subset(relative_importance, rel.inf > 10)
 plot_rel_imp <- ggplot(relative_importance) +
     geom_boxplot(
@@ -410,8 +411,6 @@ for (i in c(1:iterations)) {
     )
     dependencies[[i]]$group2 <- paste0(dependencies[[i]]$group, dependencies[[i]]$var, dependencies[[i]]$x)
     dependencies[[i]]$group3 <- paste0(dependencies[[i]]$group, dependencies[[i]]$var)
-
-
 }
 View(dependencies[[2]])
 
@@ -424,7 +423,7 @@ dependencies_mean$var <- aggregate(dependencies, by = list(dependencies$group2),
 dependencies_mean$group <- aggregate(dependencies, by = list(dependencies$group2), first)$group
 
 
-inputOptCond <- split(dependencies_mean, list(dependencies_mean$var, dependencies_mean$group))
+inputOptCond <- split(dependencies, list(dependencies$var, dependencies$group))
 optCond <- lapply(inputOptCond, function(z) {
     subset(z, z$y == max(z$y))
 })
@@ -450,6 +449,10 @@ rect <- as.data.frame(do.call(rbind, rect))
 rect$var <- sapply(strsplit(rownames(rect), "[.]"), "[[", 1)
 rect$group <- sapply(strsplit(rownames(rect), "[.]"), "[[", 2)
 
+optCond <- as.data.frame(do.call(rbind, optCond))
+optCond$Group.1 <- NULL
+optCond$group2 <- NULL
+optCond$group3 <- NULL
 
 # # unscale
 # input <- na.omit(data_all[[1]])
@@ -563,21 +566,32 @@ dependencies_selected$group2 <- paste0(dependencies_selected$var, dependencies_s
 density_selected$group2 <- paste0(density_selected$var, density_selected$group)
 
 var2 <- unique(annotations$group2)
-dependencies_selected <- dependencies_selected[dependencies_selected$group2 %in% var2,]
-density_selected <- density_selected[density_selected$group2 %in% var2,]
-rect_selected <- rect_selected[rect_selected$group2 %in% var2,]
+dependencies_selected <- dependencies_selected[dependencies_selected$group2 %in% var2, ]
+density_selected <- density_selected[density_selected$group2 %in% var2, ]
+rect_selected <- rect_selected[rect_selected$group2 %in% var2, ]
 
 
 partial_dependence <- ggplot(dependencies_selected) +
-    geom_rect(data = rect_selected, aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf), fill = "grey", alpha = 0.2) +
-    geom_area(data = density_selected, aes(x = x, y = y_scaled, fill = var2), alpha = 0.7) +
-    #geom_line(aes(x = x, y = y), col = palette[6]) +
-    geom_smooth(aes(x = x, y = y - (min(y))), col = "black", method = "gam") +
+    # geom_rect(data = rect_selected, aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf), fill = "grey", alpha = 0.2) +
+    geom_ribbon(data = density_selected, aes(
+        x = x,
+        ymax = y_scaled + min(dependencies_selected$y),
+        ymin = min(dependencies_selected$y),
+        fill = var2
+    ), alpha = 0.7) +
+    # geom_line(aes(x = x, y = y), col = palette[6]) +
+    geom_smooth(aes(x = x, y = y), col = "black", method = "gam") +
     scale_fill_manual(values = palette4) +
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0), sec.axis = dup_axis(trans = ~ . - min(dependencies_selected$y), name = "Density")) +
     facet_grid2(var ~ group, axes = "x", scale = "free", independent = "x", drop = T, render_empty = F) +
     geom_text(data = annotations, aes(x = x, y = y, hjust = -0.1, vjust = 2, label = label)) +
     theme_clean() +
-    labs(x = "", y = "", fill = "", title = "Patial dependence plots")
+     theme(
+        legend.background = element_rect(color = NA),
+        plot.background = element_rect(color = NA)
+    ) +
+    labs(x = "", y = "Predicted Ring Width", fill = "", title = "Patial dependence plots")
 partial_dependence
 
 pdf("partial_dependence_plot.pdf", width = 12, height = 14, pointsize = 12)
@@ -585,17 +599,27 @@ partial_dependence
 dev.off()
 
 partial_dependence <- ggplot(dependencies_selected) +
-    geom_area(data = density_selected, aes(x = x, y = y_scaled, fill = group, group = group), alpha = 0.7) +
-    geom_line(aes(x = x, y = y), col = palette[6]) +
-    geom_smooth(aes(x = x, y = y - (min(y)), group = group, col = group), col = "black", method = "gam") +
-    scale_fill_manual(values = palette4) +
-    scale_color_manual(values = palette4) +
+    geom_ribbon(data = density_selected, aes(
+        x = x, 
+        ymax = y_scaled + min(dependencies_selected$y),
+        ymin = min(dependencies_selected$y),
+        fill = group, 
+        group = group), alpha = 0.4) +
+    geom_smooth(aes(x = x, y = y, group = group, col = group), method = "gam", se = FALSE) +
+    scale_fill_manual(values = palette5) +
+    scale_color_manual(values = palette5) +
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0), sec.axis = dup_axis(trans = ~ . - min(dependencies_selected$y), name = "Density")) +
     facet_grid2(~var, axes = "x", scale = "free", independent = "x", drop = T, render_empty = F) +
-    geom_text(data = annotations, aes(x = x, y = y, hjust = -0.1, vjust = 2, label = label)) +
+    # geom_text(data = annotations, aes(x = x, y = y, hjust = -0.1, vjust = 2, label = label)) +
     theme_clean() +
-    labs(x = "", y = "", fill = "", title = "Patial dependence plots")
+     theme(
+        legend.background = element_rect(color = NA),
+        plot.background = element_rect(color = NA)
+    ) +
+    labs(x = "", y = "Predicted Ring Width", fill = "", col = "", title = "Patial dependence plots")
 partial_dependence
 
-pdf("partial_dependence_plot_combined.pdf", width = 12, height = 12, pointsize = 12)
+pdf("partial_dependence_plot_combined.pdf", width = 16, height = 4, pointsize = 12)
 partial_dependence
 dev.off()
