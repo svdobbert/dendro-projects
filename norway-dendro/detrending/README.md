@@ -3,10 +3,10 @@
 Detrending Ring Width series from various shrub species.
  
 Currently included species:
-B. nana
-S. herbacea
-C. galianoi
-R. ferrugineum
+- B. nana
+- S. herbacea
+- C. galianoi
+- R. ferrugineum
 
 Age trends and ring width series by biological age are calculated and plotted.
 
