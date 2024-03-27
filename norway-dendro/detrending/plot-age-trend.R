@@ -120,10 +120,11 @@ p2 <- ggplot(input_age) +
   labs(x = "", y = "Ring width compared to annual biweigth robust mean [%]")
 p2
 
+labelsGroupSubset <- subset(labelsGroup, labelsGroup$label != "0")
 p3 <- ggplot(input_age_mean_group) +
   geom_area(aes(x = age, y = sample_depth), alpha = .5, fill = palette[2]) +
   theme_bw() +
-  geom_text(data = labelsGroup, aes(x = Inf, y = Inf, hjust = 1.1, vjust = 1.2, label = label)) +
+  geom_text(data = labelsGroupSubset, aes(x = Inf, y = Inf, hjust = 1.1, vjust = 1.2, label = label)) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
   facet_wrap(~ species + group, nrow = 1) +

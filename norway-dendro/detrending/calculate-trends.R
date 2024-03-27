@@ -115,10 +115,6 @@ exp_se <- aggregate(input_age, by = list(age = input_age$age, species = input_ag
 agespline_se <- aggregate(input_age, by = list(age = input_age$age, species = input_age$species), function(x) sd(x, na.rm = TRUE)/sqrt(length(x)))$curves_agespline
 hug_se <- aggregate(input_age, by = list(age = input_age$age, species = input_age$species), function(x) sd(x, na.rm = TRUE)/sqrt(length(x)))$curves_hug
 
-
-
-
-
 # linear trends of individual series
 linear_individual <- list()
 p_value_individual <- list()
@@ -126,7 +122,7 @@ coefficient_individual <- list()
 species_individual <- list()
 group_individual <- list()
 id_individual <- list()
-for(i in c(1:length(inputTrend))) {
+for(i in seq_along(inputTrend)) {
   linear_individual[[i]] <- lm(inputTrend[[i]]$value ~ inputTrend[[i]]$age)
   p_value_individual[[i]] <- overall_p(linear_individual[[i]])
   coefficient_individual[[i]] <- summary(linear_individual[[i]])[["coefficients"]][[2]] 

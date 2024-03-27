@@ -8,7 +8,7 @@
 options(scipen = 999) # turns of scientific notations
 
 ## set working directory
-dir <- "~/workspaces/dendro/norway-dendro/dedrending/output" # set directory for output
+dir <- "~/workspaces/dendro/norway-dendro/detrending/output" # set directory for output
 setwd(dir)
 
 # load all dependencies
@@ -33,10 +33,14 @@ input <- as.data.frame(rbind(
     inputRho
 ))
 
-## run data preperation scipts
+## run data preperation scripts
 # get sample size
 source("../get-sample-size.R")
 # get constants
 source("../constants.R")
+
+## run main scripts
 # calculate age
 source("../calculate-age.R")
+# calculate trends
+source("../calculate-trends.R")
