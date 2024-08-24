@@ -18,7 +18,8 @@ p1 <- ggplot(input_age) +
     strip.text.x = element_blank(),
     plot.margin = unit(c(0, 1, 0, 1), "cm")
   ) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0, 52)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 200)) +
+  scale_y_continuous(expand = c(0, 0)) +
   labs(x = "Age", y = "Ring width [μm]")
 p1
 
@@ -36,7 +37,7 @@ p2 <- ggplot(input_age) +
     strip.text.x = element_blank(),
     plot.margin = unit(c(0, 1, 1, 1), "cm")
   ) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 200)) +
   scale_y_continuous(limits = c(0, 300)) +
   labs(x = "Biological age [years]", y = "Ring width compared to annual biweigth robust mean [%]")
 p2
@@ -44,9 +45,9 @@ p2
 p3 <- ggplot(input_age_mean_species) +
   geom_area(aes(x = age, y = sample_depth), alpha = .5, fill = palette[2]) +
   theme_bw() +
-  geom_text(data = labels, aes(x = Inf, y = Inf, hjust = 1.1, vjust = 1.2, label = label)) +
+  #geom_text(data = labels, aes(x = Inf, y = Inf, hjust = 1.1, vjust = 1.2, label = label)) +
   scale_y_continuous(expand = c(0, 0)) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 200)) +
   theme(
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank(),
@@ -67,18 +68,34 @@ p4 <- ggplot(input_age_mean_species) +
   labs(x = "", y = "Ring width compared to annual biweigth robust mean [%]")
 p4
 
-cairo_pdf("Age_trend_by_species.pdf", width = 17, height = 10, pointsize = 10)
+p5 <- ggplot(input_age) +
+  # geom_hline(yintercept = 100, linetype = "dashed") +
+  # geom_line(data = input_age_mean_species, aes(x = age, y = perc_tbrm_species), col = palette[1]) +
+  geom_boxplot(aes(x = as.numeric(year), y = value, group = year), col = palette[3], alpha = .3) +
+  theme_bw() +
+  facet_wrap(~species, scale = "free_y", nrow = 1) +
+  theme(
+    legend.position = "none",
+    strip.background = element_blank(),
+    strip.text.x = element_blank(),
+    plot.margin = unit(c(0, 1, 0, 1), "cm")
+  ) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Calendar Year", y = "Ring width [μm]")
+p5
+
+cairo_pdf("Age_trend_by_species.pdf", width = 20, height = 8, pointsize = 10)
 ggarrange(
   plotlist = list(p3, p1, p2), heights = c(0.4, 1, 1), widths = c(1, 1, 1), legend = "bottom",
-  nrow = 3, common.legend = TRUE, align = "v", labels = c("a", "b", "c")
+  nrow = 3, common.legend = TRUE, align = "v", labels = c("A", "B", "C")
 )
 dev.off()
-
 
 ###
 sample_depth <- p3
 boxplot <- p1
 comp <- p2
+by_year <- p5
 
 
 ## by group (base, stem, root)
@@ -98,7 +115,7 @@ p1 <- ggplot(input_age) +
     strip.text.x = element_blank(),
     plot.margin = unit(c(0, 1, 0, 1), "cm")
   ) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0, 52)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 200)) +
   labs(x = "Age", y = "Ring width [μm]")
 p1
 
@@ -115,7 +132,7 @@ p2 <- ggplot(input_age) +
     strip.text.x = element_blank(),
     plot.margin = unit(c(0, 1, 1, 1), "cm")
   ) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 200)) +
   scale_y_continuous(limits = c(0, 300)) +
   labs(x = "", y = "Ring width compared to annual biweigth robust mean [%]")
 p2
@@ -128,7 +145,7 @@ p3 <- ggplot(input_age_mean_group) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
   facet_wrap(~ species + group, nrow = 1) +
-  scale_x_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 200)) +
   theme(
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank(),
@@ -151,6 +168,6 @@ p4
 cairo_pdf("Age_trend_by_group.pdf", width = 30, height = 10, pointsize = 10)
 ggarrange(
   plotlist = list(p3, p1, p2), heights = c(0.3, 1, 1), widths = c(1, 1, 1), legend = "bottom",
-  nrow = 3, common.legend = TRUE, align = "v"
+  nrow = 3, common.legend = TRUE, align = "v", labels = c("A", "B", "C")
 )
 dev.off()

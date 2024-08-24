@@ -26,6 +26,13 @@ load("../input-data/climate_Tafjord_Fokstugu.gz")
 data_region <- data
 load("../input-data/climate_EW.gz") #data_EW
 
+# install.packages("readxl")
+# library(readxl)
+# fwrite(growth, file = "../input-data/growth.csv.gz", compress = "gzip")
+# fwrite(data_sites, file = "../input-data/data_sites.csv.gz", compress = "gzip")
+# fwrite(data_era5, file = "../input-data/data_era5.csv.gz", compress = "gzip")
+# fwrite(data_region, file = "../input-data/data_region.csv.gz", compress = "gzip")
+# fwrite(data_EW, file = "../input-data/data_EW.csv.gz", compress = "gzip")
 
 ## run data preperation scipts
 # get constants
@@ -36,3 +43,10 @@ source("../preperation/detrending.R")
 source("../preperation/create-data.R")
 # create model functions
 source("../preperation/model-functions.R")
+
+# fwrite(data, file = "../input-data/data.csv.gz", compress = "gzip")
+# fwrite(data_regional, file = "../input-data/data_regional.csv.gz", compress = "gzip")
+# fwrite(data_oscelations, file = "../input-data/data_oscelations.csv.gz", compress = "gzip")
+# fwrite(data_era5, file = "../input-data/data_era5.csv.gz", compress = "gzip")
+# fwrite(data_at, file = "../input-data/data_at.csv.gz", compress = "gzip")
+# fwrite(data_p, file = "../input-data/data_p.csv.gz", compress = "gzip")

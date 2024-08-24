@@ -56,7 +56,7 @@ p <- ggplot(age_structure) +
   geom_histogram(aes(x = age), fill = palette[4], alpha = 1, binwidth = 1) +
   facet_wrap(~ species, nrow = 1) +
   labs(x = "Biological age [years]") +
-  scale_y_continuous(expand = c(0,1)) +
+  scale_y_continuous(expand = c(0,0)) +
   scale_x_continuous(expand = c(0,0)) +
   theme_bw() +
   theme(strip.background = element_blank())
@@ -243,7 +243,7 @@ p[[i]] <- ggplot(pinput_individual[[i]], aes(x = lvl, y = perc, fill = site, gro
   theme_void()
 }
 
-cairo_pdf("pieChart.pdf", width = 30, height = 10, pointsize = 10)  
+cairo_pdf("pieChart.pdf", width = 23, height = 5, pointsize = 10)  
 ggpubr::ggarrange(plotlist = p,
           nrow = 1, common.legend = FALSE, align = "v") 
 dev.off()

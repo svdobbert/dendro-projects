@@ -116,9 +116,9 @@ data <- data.frame(year = data_EW$Time,
                    AMO_annual = data_EW$AMO_KaplanSST_AV_current_year,
                    NAO_Annual = data_EW$NAO_AV_current_year,
                    
-             #      AO_annual_preyear = data_EW$AO_AV_last_year,
-            #       AMO_annual_preyear = data_EW$AMO_KaplanSST_AV_last_year,
-            #       NAO_Annual_preyear = data_EW$NAO_AV_last_year,
+                   AO_annual_preyear = data_EW$AO_AV_last_year,
+                   AMO_annual_preyear = data_EW$AMO_KaplanSST_AV_last_year,
+                   NAO_Annual_preyear = data_EW$NAO_AV_last_year,
                    
                    AO_winter = rowMeans(cbind(data_EW$AO_Dec_last_year, data_EW$AO_Jan_current_year, data_EW$AO_Feb_current_year, na.rm = TRUE)),
                    AO_spring = rowMeans(cbind(data_EW$AO_Mar_current_year, data_EW$AO_Apr_current_year, data_EW$AO_May_current_year, na.rm = TRUE)),
@@ -431,3 +431,6 @@ data_all <- list(data,
                  data_era5,
                  data_at,
                  data_p)
+
+
+
