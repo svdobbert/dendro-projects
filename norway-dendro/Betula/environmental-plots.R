@@ -33,24 +33,19 @@ median$dataset <- replace(median$dataset, grep("winter", median$var), "PreGrowth
 
 
 median_selected <- subset(median, median$diff_perc > 10 | median$diff_perc < -10)
+
+median_selected <- median_selected[!grepl("preyear", median_selected$var), ]
 var2 <- unique(median_selected$var)
 median_diff <- ggplot(median_selected) +
-    geom_col_pattern(
+    geom_col(
         aes(
             x = reorder(var, diff_perc),
             y = as.numeric(diff_perc),
             group = var,
             fill = group,
-            pattern = dataset,
         ),
         color = "black",
-        pattern_fill = "black",
-        pattern_angle = 45,
-        pattern_density = 0.1,
-        pattern_spacing = 0.01,
-        pattern_key_scale_factor = 0.6
     ) +
-    scale_pattern_manual(values = c(PreGrowth = "stripe", Current = "none")) +
     guides(
         pattern = guide_legend(override.aes = list(fill = "white")),
         fill = guide_legend(override.aes = list(pattern = "none"))
@@ -70,9 +65,53 @@ median_diff <- ggplot(median_selected) +
     )
 median_diff
 
-pdf("median_change_post1995.pdf", width = 10, height = 10, pointsize = 12)
+pdf("median_change_post1995.pdf", width = 10, height = 8, pointsize = 12)
 median_diff
 dev.off()
+
+input_mean <- aggregate(input, by = list(input$year), function(x) mean(x, na.rm = T))
+
+plot_env <- function(env_var, label) {
+df <- data.frame(year = input_mean$year, value = env_var)
+colnames(df) <- c("year", "value")
+df$group <- rep(NA, nrow(df))
+df$group <- replace(df$group, df$value > mean(df$value), "positive")
+df$group <- replace(df$group, df$value < mean(df$value), "negative")
+
+env <- ggplot(df) +
+  geom_vline(xintercept = 1995) +
+  geom_vline(xintercept = c(1975, 1980, 1985, 1990, 2000, 2005, 2010, 2015), col = "lightgrey", linetype = "dotted") +
+ geom_hline(yintercept = mean(df$value), linetype = "dashed") +
+ geom_col(
+        aes(
+            x = year,
+            y = value,
+            group = group,
+            fill = group,
+        ),
+        color = "black",
+    ) +
+  labs(
+    y = label,
+    x = "Year",
+  ) +
+  theme_clean() +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_fill_manual(values = palette7) +
+  theme(
+    legend.background = element_rect(color = NA),
+    legend.position = "none",
+    plot.background = element_rect(color = NA)
+  )
+env
+}
+
+input_plot <- input_mean[48]
+pdf(paste0("env_plot", colnames(input_plot), ".pdf"), width = 10, height = 4, pointsize = 12)
+plot_env(input_plot, colnames(input_plot))
+dev.off()
+
 
 ## Plot boxplots and optimum conditions
 pinput <- data.frame(
@@ -203,7 +242,7 @@ relImp <- ggplot(subset(pinputRelativeImportance, pinputRelativeImportance$group
     )
 relImp
 
-pdf("boxplots_optConditions_relImp.pdf", width = 11, height = 14, pointsize = 12)
+pdf("boxplots_optConditions_relImp.pdf", width = 13, height = 20, pointsize = 12)
 ggpubr::ggarrange(
     plotlist = list(relImp, optCondBoxplots), widths = c(1, 2.5), legend = "right",
     nrow = 1, common.legend = TRUE, labels = c("A", "B")

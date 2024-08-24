@@ -37,6 +37,29 @@ inputRestructured <- restructure(input)
 nYear <- max(na.omit(input$year)) - min(na.omit(input$year)) +1
 inputRestructured[, 1:nYear] <- sapply(inputRestructured[, 1:nYear], function(x) as.numeric(x))
 
+# # (optional) subset input to include only individuals younger than startYear
+# startYear <- 2000
+# endYear <- as.numeric(min(na.omit(input$year)))
+# minYear <- startYear - endYear
+# nYear <- nYear - minYear
+# inputRestructured <- inputRestructured[, -c(1:minYear)]
+# inputRestructured <- subset(inputRestructured, is.na(inputRestructured[1]) == TRUE)
+
+# (optional) subset input to include only individuals older than age
+# age <- 70
+# Year <- nYear-age
+# inputRestructured <- subset(inputRestructured, is.na(inputRestructured[Year]) == FALSE)
+# inputRestructured <- subset(inputRestructured, inputRestructured$species == "R. ferrugineum")
+
+# # (optional) subset input to include only individuals older than minAge and youger than maxAge
+# minAge <- 40
+# Year <- nYear-minAge
+# inputRestructured <- subset(inputRestructured, is.na(inputRestructured[Year]) == FALSE)
+# maxAge <- 70
+# Year <- nYear-maxAge-1
+# inputRestructured <- subset(inputRestructured, is.na(inputRestructured[Year]) == TRUE)
+# inputRestructured <- subset(inputRestructured, inputRestructured$species == "R. ferrugineum")
+
 # create dataframe with all Individuals as same length
 input <- data.frame(
   value = c(t(inputRestructured[, 1:nYear])),
@@ -47,16 +70,15 @@ input <- data.frame(
   position = rep(inputRestructured$position, each = nYear)
 )
 
-
 ## calculate mean and tbrm for each year 
-tbrm <- sapply(inputRestructured[, 1:nYear], function(x) tbrm(x))
+tbrm <- sapply(inputRestructured[, 1:nYear], function(x) tbrm(na.omit(x)))
 mean <- sapply(inputRestructured[, 1:nYear], function(x) mean(na.omit(x)))
 
 inputSpecies <- split(inputRestructured, inputRestructured$species)
 tbrm_species <- list()
 mean_species <- list()
 for (i in seq_along(inputSpecies)) {
-  tbrm_species[[i]] <- sapply(inputSpecies[[i]][, 1:nYear], function(x) tbrm(x))
+  tbrm_species[[i]] <- sapply(inputSpecies[[i]][, 1:nYear], function(x) tbrm(na.omit(x)))
   mean_species[[i]] <- sapply(inputSpecies[[i]][, 1:nYear], function(x) mean(na.omit(x)))
 }
 names(tbrm_species) <- names(inputSpecies)
@@ -66,7 +88,7 @@ inputSection <- split(inputRestructured, list(inputRestructured$species, inputRe
 tbrm_section <- list()
 mean_section <- list()
 for (i in seq_along(inputSection)) {
-  tbrm_section[[i]] <- sapply(inputSection[[i]][, 1:nYear], function(x) tbrm(x))
+  tbrm_section[[i]] <- sapply(inputSection[[i]][, 1:nYear], function(x) tbrm(na.omit(x)))
   mean_section[[i]] <- sapply(inputSection[[i]][, 1:nYear], function(x) mean(na.omit(x)))
 }
 names(tbrm_section) <- names(inputSection)
@@ -190,9 +212,9 @@ mean(test$value)
 mean(test$age)
 
 # Tukey's Biweight Robust Mean
-input_age_mean$tbrm <- aggregate(input_age, by = list(age = input_age$age), function(x) tbrm(x))$value
-input_age_mean_group$tbrm <- aggregate(input_age, by = list(age = input_age$age, group = input_age$group2), function(x) tbrm(x))$value
-input_age_mean_species$tbrm <- aggregate(input_age, by = list(age = input_age$age, group = input_age$species), function(x) tbrm(x))$value
+input_age_mean$tbrm <- aggregate(input_age, by = list(age = input_age$age), function(x) tbrm(na.omit(x)))$value
+input_age_mean_group$tbrm <- aggregate(input_age, by = list(age = input_age$age, group = input_age$group2), function(x) tbrm(na.omit(x)))$value
+input_age_mean_species$tbrm <- aggregate(input_age, by = list(age = input_age$age, group = input_age$species), function(x) tbrm(na.omit(x)))$value
 
 # standard error
 input_age_mean$se <- aggregate(input_age, by = list(age = input_age$age), function(x) sd(x, na.rm = TRUE) / sqrt(length(x)))$value
@@ -203,7 +225,6 @@ input_age_mean$perc_mean_se <- aggregate(input_age, by = list(age = input_age$ag
 input_age_mean_group$se <- aggregate(input_age, by = list(age = input_age$age, group = input_age$group2), function(x) sd(x, na.rm = TRUE) / sqrt(length(x)))$value
 input_age_mean_group$perc_tbrm_se <- aggregate(input_age, by = list(age = input_age$age, group = input_age$group2), function(x) sd(x, na.rm = TRUE) / sqrt(length(x)))$perc_tbrm_group
 input_age_mean_group$perc_mean_se <- aggregate(input_age, by = list(age = input_age$age, group = input_age$group2), function(x) sd(x, na.rm = TRUE) / sqrt(length(x)))$perc_mean_group
-
 
 # standard error
 input_age_mean_species$se <- aggregate(input_age, by = list(age = input_age$age, group = input_age$species), function(x) sd(x, na.rm = TRUE) / sqrt(length(x)))$value

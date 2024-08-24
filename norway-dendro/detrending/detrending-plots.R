@@ -7,7 +7,7 @@ plotsBoxplot <- ggplot(inputIndividualCurves) +
   geom_text(data = labels, aes(x = Inf, y = Inf, hjust = 1.1, vjust = 1.2, label = label)) +
   scale_alpha_manual(values = c(0.1)) +
   scale_color_manual(values = c(palette[2], palette[6])) +
-  facet_wrap(~species, scale = "free_y", nrow = 1) +
+  facet_grid(. ~ species, scale = "free", space = "free") +
   scale_x_continuous(expand = c(0, 0)) +
   labs(x = "Calendar year", y = "Ring width [μm]", col = "", alpha = "") +
   theme_bw() +
@@ -15,7 +15,7 @@ plotsBoxplot <- ggplot(inputIndividualCurves) +
     legend.position = "none",
     strip.background = element_blank()
   )
-plotsBoxplot 
+plotsBoxplot
 
 # plot by biological age (lines and mean)
 inputProcessSubset <- subset(inputProcess, is.na(inputProcess$value) == FALSE)
@@ -25,7 +25,7 @@ plotsAge <- ggplot(inputProcessSubset) +
   scale_alpha_manual(values = c(1, 0.1)) +
   scale_color_manual(values = c(palette[3], palette[2], palette[6])) +
   geom_pointrange(data = subset(inputProcessSubset, inputProcessSubset$var == "Biweigth robust mean series"), aes(x = age, y = value, ymin = value - se, ymax = value + se), col = palette[3], size = 0.05) +
-  facet_wrap(~species, scale = "free", nrow = 1) +
+  facet_grid(. ~ species, scale = "free", space = "free") +
   scale_x_continuous(expand = c(0, 0)) +
   labs(x = "Biological age [year]", y = "Ring width [μm]", col = "", alpha = "") +
   theme_bw() +
@@ -38,7 +38,9 @@ plotsAge <- ggplot(inputProcessSubset) +
     legend.background = element_blank(),
     legend.key.size = unit(0.35, "cm"),
     legend.box.background = element_rect(colour = "black", fill = alpha("white", 0.5)),
-    legend.position = c(1, 1)
+    legend.position = c(1, 1),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank()
   )
 plotsAge
 
@@ -86,12 +88,17 @@ pinputTrend <- as.data.frame(rbind(
 
 # plot
 pinputTrendSubset <- subset(pinputTrend, is.na(pinputTrend$value) == FALSE)
+pinputTrendSubset$var <- replace(pinputTrendSubset$var, pinputTrendSubset$var == "Biweigth robust mean series", paste0("Biweigth robust mean series", "/Individual curve"))
+pinputTrendSubset <- as.data.frame(rbind(pinputTrendSubset, data.frame(age = 202, species = "R. ferrugineum", tbrm = NA, var = "Biweigth robust mean series/Individual curve", value = NA, se = NA)))
+pinputTrendSubset$value <- as.numeric(pinputTrendSubset$value)
+pinputTrendSubset$se <- as.numeric(pinputTrendSubset$se)
+pinputTrendSubset$age <- as.numeric(pinputTrendSubset$age)
 plotsRCS <- ggplot(pinputTrendSubset) +
   geom_line(aes(x = age, y = value, group = var, col = var), size = 0.5) +
   geom_pointrange(aes(x = age, y = value, ymin = value - se, ymax = value + se, col = var), size = 0.05) +
   scale_color_manual(values = c(palette[3], palette[2], palette[1])) +
   scale_fill_manual(values = c(palette[3], palette[2], palette[1])) +
-  facet_wrap(~species, scale = "free", nrow = 1) +
+  facet_grid(. ~ species, scale = "free", space = "free") +
   scale_x_continuous(expand = c(0, 0)) +
   labs(x = "Biological age [years]", y = "Ring width [μm]", col = "", alpha = "") +
   theme_bw() +
@@ -104,9 +111,11 @@ plotsRCS <- ggplot(pinputTrendSubset) +
     legend.background = element_blank(),
     legend.key.size = unit(0.35, "cm"),
     legend.box.background = element_rect(colour = "black", fill = alpha("white", 0.5)),
-    legend.position = c(1, 1)
+    legend.position = c(1, 1),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank()
   )
-plotsRCS 
+plotsRCS
 
 # Plot Ring width indices (RWI) from individual curves
 pinputRWI <- data.frame(
@@ -117,14 +126,17 @@ pinputRWI <- data.frame(
   value = c(input_age_mean_species$value, spline, exp, hug),
   se = c(input_age_mean_species$se, spline_se, exp_se, hug_se)
 )
-pinputRWI$var <- factor(pinputRWI$var, levels = c("Biweigth robust mean series", "Smoothing spline curve (mean)", "Negative exponential model curve (mean)", "Hugershoff model curve (mean)"))
+pinputRWI$var <- replace(pinputRWI$var, pinputRWI$var == "Biweigth robust mean series", paste0("Biweigth robust mean series", "/Individual curve"))
+pinputRWI$var <- factor(pinputRWI$var, levels = c("Biweigth robust mean series/Individual curve", "Smoothing spline curve (mean)", "Negative exponential model curve (mean)", "Hugershoff model curve (mean)"))
 
 pinputRWISubset <- subset(pinputRWI, is.na(pinputRWI$value) == FALSE)
+pinputRWISubset <- as.data.frame(rbind(pinputRWISubset, data.frame(age = 202, species = "R. ferrugineum", tbrm = NA, var = "Biweigth robust mean series/Individual curve", value = NA, se = NA)))
+
 plotsRWI <- ggplot(pinputRWISubset) +
   geom_line(aes(x = age, y = value, group = var, col = var), size = 0.5) +
   geom_pointrange(aes(x = age, y = value, ymin = value - se, ymax = value + se, col = var), size = 0.05) +
   scale_color_manual(values = c(palette[3], palette[4], palette[5], palette[6], palette[7])) +
-  facet_wrap(~species, scale = "free", nrow = 1) +
+  facet_grid(. ~ species, scale = "free", space = "free") +
   scale_x_continuous(expand = c(0, 0)) +
   labs(x = "Biological age [years]", y = "Ring width [μm]", col = "", alpha = "") +
   theme_bw() +
@@ -172,17 +184,50 @@ pinput <- data.frame(
   species = rep(pinput$species, 7)
 )
 pinput$year <- as.numeric(pinput$year)
+
+pinput$var <- replace(pinput$var, pinput$var == "Mean series", paste0("Mean series", "/Individual curve [0.1 mm]"))
+
 pinputSubset <- subset(pinput, is.na(pinput$detrended) == FALSE)
 plotsDetrended <- ggplot(pinputSubset) +
   geom_line(aes(x = year, y = detrended, group = var, col = var), size = 0.5) +
-  geom_line(data = subset(pinputSubset, pinputSubset$var == "Mean series"), aes(x = year, y = detrended, group = var), size = .8, col = palette[3]) +
-  geom_pointrange(aes(x = year, y = detrended, ymin = detrended - se, ymax = detrended + se, col = var), size = 0.05, alpha = .5) +
+  geom_line(data = subset(pinputSubset, pinputSubset$var == "Mean series"), aes(x = year, y = detrended, group = var), size = .8, col = palette[3], alpha = 0.5) +
+  geom_point(aes(x = year, y = detrended, col = var), size = 0.05, alpha = .5) +
+  # geom_pointrange(aes(x = year, y = detrended, ymin = detrended - se, ymax = detrended + se, col = var), size = 0.05, alpha = .5) +
   scale_color_manual(values = c(palette[3], palette[2], palette[7], palette[1], palette[6], palette[5], palette[4])) +
   scale_fill_manual(values = c(palette[3], palette[2], palette[7], palette[1], palette[6], palette[5], palette[4])) +
-  facet_wrap(~species, scale = "free", nrow = 1) +
+  facet_grid(. ~ species, scale = "free", space = "free") +
   scale_x_continuous(expand = c(0, 0)) +
-  scale_y_continuous(sec.axis = dup_axis(trans = ~ . * 100, name = "")) +
-  labs(x = "Calender year", y = "Ring width index/RCS chronology", col = "", alpha = "") +
+  # ylim(c(-50, 50)) +
+  # scale_y_continuous(sec.axis = dup_axis(trans = ~ . * 100, name = "")) +
+  labs(x = "Calendar year", y = "Ring width index/RCS chronology", col = "", alpha = "") +
+  theme_bw() +
+  theme(
+    strip.background = element_blank(),
+    strip.text.x = element_blank(),
+    legend.justification = c(1.02, 1.08),
+    legend.title = element_blank(),
+    legend.background = element_blank(),
+    legend.key.size = unit(0.35, "cm"),
+    legend.spacing.y = unit(0, "pt"),
+    legend.box.background = element_rect(colour = "black", fill = alpha("white", 0.5)),
+    legend.position = c(1, 1),
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank()
+  )
+plotsDetrended
+
+plotsDetrendedGAM <- ggplot(pinputSubset) +
+  geom_smooth(aes(x = year, y = detrended, group = var, col = var), size = 1, se = FALSE) +
+  geom_smooth(data = subset(pinputSubset, pinputSubset$var == "Mean series"), aes(x = year, y = detrended, group = var), size = 1.5, col = palette[3], alpha = 0.5, se = FALSE) +
+  #  geom_point(aes(x = year, y = detrended, col = var), size = 0.05, alpha = .5) +
+  # geom_pointrange(aes(x = year, y = detrended, ymin = detrended - se, ymax = detrended + se, col = var), size = 0.05, alpha = .5) +
+  scale_color_manual(values = c(palette[3], palette[2], palette[7], palette[1], palette[6], palette[5], palette[4])) +
+  scale_fill_manual(values = c(palette[3], palette[2], palette[7], palette[1], palette[6], palette[5], palette[4])) +
+  facet_grid(. ~ species, scale = "free", space = "free") +
+  scale_x_continuous(expand = c(0, 0)) +
+  # ylim(c(-50, 50)) +
+  # scale_y_continuous(sec.axis = dup_axis(trans = ~ . * 100, name = "")) +
+  labs(x = "Calendar year", y = "Ring width index/RCS chronology (smoothed)", col = "", alpha = "") +
   theme_bw() +
   theme(
     strip.background = element_blank(),
@@ -195,7 +240,7 @@ plotsDetrended <- ggplot(pinputSubset) +
     legend.box.background = element_rect(colour = "black", fill = alpha("white", 0.5)),
     legend.position = c(1, 1)
   )
-plotsDetrended
+plotsDetrendedGAM
 
 # plot difference between mean series and detrended series
 inputDifference <- split(pinput, pinput$var)
@@ -216,7 +261,7 @@ plotsDifference <- ggplot(pinput) +
   scale_fill_manual(values = c(palette[2], palette[7], palette[1], palette[6], palette[5], palette[4])) +
   facet_wrap(~species, scale = "free_y", nrow = 1) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Calender year", y = "Difference to mean series", col = "", alpha = "") +
+  labs(x = "Calendar year", y = "Difference to mean series", col = "", alpha = "") +
   theme(legend.position = "bottom") +
   theme_bw() +
   theme(
@@ -233,12 +278,12 @@ plotsDifference <- ggplot(pinput) +
 plotsDifference
 
 finalPlots <- ggarrange(
-  plotlist = list(sample_depth, boxplot, comp, plotsAge, plotsRCS, plotsRWI, plotsDetrended),
+  plotlist = list(plotsBoxplot, plotsAge, plotsRCS, plotsRWI, plotsDetrended, plotsDetrendedGAM),
   ncol = 1, common.legend = FALSE, align = "hv", labels = c("a", "b", "c", "d", "e", "f", "g")
 )
 finalPlots
 
-cairo_pdf("detrending_all.pdf", width = 17, height = 28, pointsize = 10)
+cairo_pdf("detrending_all.pdf", width = 20, height = 25, pointsize = 10)
 finalPlots
 dev.off()
 
@@ -270,20 +315,28 @@ PlotsRCSExample <- ggplot(trend) +
     legend.key.size = unit(0.35, "cm"),
     legend.spacing.y = unit(0, "pt"),
     legend.box.background = element_rect(colour = "black", fill = alpha("white", 0.5)),
-    legend.position = c(1, 1)
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank()
   )
 PlotsRCSExample
+
 
 # combine plots with example
 PlotsRCSExampleArrange <- ggarrange(
   plotlist = list(NA, PlotsRCSExample), heights = c(1, 2),
-  ncol = 1)
-PlotsRCSExampleArrange 
+  ncol = 1
+)
+PlotsRCSExampleArrange
 PlotsRCSAll <- ggarrange(
   plotlist = list(plotsRCS, PlotsRCSExampleArrange), widths = c(1, 0.2),
   nrow = 1, common.legend = FALSE
 )
 PlotsRCSAll
+
+cairo_pdf("PlotsRCSAll.pdf", width = 20, height = 7, pointsize = 10)
+PlotsRCSAll
+dev.off()
 
 trend2 <- data.frame(
   age = rep(pinput$age, 4),
@@ -308,15 +361,16 @@ PlotsRWIExample <- ggplot(trend2) +
     legend.key.size = unit(0.35, "cm"),
     legend.spacing.y = unit(0, "pt"),
     legend.box.background = element_rect(colour = "black", fill = alpha("white", 0.5)),
-    legend.position = c(1, 1)
+    legend.position = "none",
   )
 PlotsRWIExample
 
 # combine plots with example
 PlotsRWIExampleArrange <- ggarrange(
   plotlist = list(NA, PlotsRWIExample), heights = c(1, 2),
-  ncol = 1)
-PlotsRWIExampleArrange 
+  ncol = 1
+)
+PlotsRWIExampleArrange
 PlotsRWIAll <- ggarrange(
   plotlist = list(plotsRWI, PlotsRWIExampleArrange), widths = c(1, 0.2),
   nrow = 1, common.legend = FALSE
@@ -337,7 +391,7 @@ PlotsDetrendedxample <- ggplot(pinput) +
   scale_color_manual(values = c(palette[3], palette[2], palette[7], palette[1], palette[6], palette[5], palette[4])) +
   scale_fill_manual(values = c(palette[3], palette[2], palette[7], palette[1], palette[6], palette[5], palette[4])) +
   scale_x_continuous(expand = c(0, 0)) +
-  scale_y_continuous(sec.axis = dup_axis(trans = ~ . * 100, name = "")) +
+  # scale_y_continuous(sec.axis = dup_axis(trans = ~ . * 100, name = "")) +
   labs(x = "", y = "", col = "", alpha = "", title = "Individual curve") +
   theme_bw() +
   theme(
@@ -348,20 +402,56 @@ PlotsDetrendedxample <- ggplot(pinput) +
     legend.key.size = unit(0.35, "cm"),
     legend.spacing.y = unit(0, "pt"),
     legend.box.background = element_rect(colour = "black", fill = alpha("white", 0.5)),
-    legend.position = c(1, 1)
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.text.x = element_blank()
   )
 PlotsDetrendedxample
 
 # combine plots with example
 PlotsDetrendedExampleArrange <- ggarrange(
   plotlist = list(NA, PlotsDetrendedxample), heights = c(1, 2),
-  ncol = 1)
+  ncol = 1
+)
 PlotsDetrendedExampleArrange
 PlotsDetrendedAll <- ggarrange(
   plotlist = list(plotsDetrended, PlotsDetrendedExampleArrange), widths = c(1, 0.2),
   nrow = 1, common.legend = FALSE
 )
 PlotsDetrendedAll
+
+
+PlotsDetrendedGAMexample <- ggplot(pinput) +
+  geom_smooth(aes(x = year, y = detrended, group = var, col = var), size = 1, se = FALSE) +
+  geom_smooth(data = subset(pinput, pinput$var == "Mean series"), aes(x = year, y = detrended, group = var), size = 1.5, col = palette[3], se = FALSE) +
+  scale_color_manual(values = c(palette[3], palette[2], palette[7], palette[1], palette[6], palette[5], palette[4])) +
+  scale_fill_manual(values = c(palette[3], palette[2], palette[7], palette[1], palette[6], palette[5], palette[4])) +
+  scale_x_continuous(expand = c(0, 0)) +
+  # scale_y_continuous(sec.axis = dup_axis(trans = ~ . * 100, name = "")) +
+  labs(x = "", y = "", col = "", alpha = "", title = "Individual curve") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 1),
+    legend.justification = c(1.02, 1.08),
+    legend.title = element_blank(),
+    legend.background = element_blank(),
+    legend.key.size = unit(0.35, "cm"),
+    legend.spacing.y = unit(0, "pt"),
+    legend.box.background = element_rect(colour = "black", fill = alpha("white", 0.5)),
+    legend.position = "none",
+  )
+PlotsDetrendedGAMexample
+
+# combine plots with example
+PlotsDetrendedGAMExampleArrange <- ggarrange(
+  plotlist = list(NA, PlotsDetrendedGAMexample), heights = c(1, 2),
+  ncol = 1
+)
+PlotsDetrendedGAMExampleArrange
+PlotsDetrendedGAMAll <- ggarrange(
+  plotlist = list(plotsDetrendedGAM, PlotsDetrendedGAMExampleArrange), widths = c(1, 0.2),
+  nrow = 1, common.legend = FALSE
+)
 
 inputDifferenceExample <- split(pinput, pinput$var)
 for (i in seq_along(inputDifferenceExample)) {
@@ -381,7 +471,7 @@ p5
 
 # final plots
 PlotsBoxplots <- ggarrange(
-  plotlist = list(plotsBoxplot , NA), widths = c(1, 0.2),
+  plotlist = list(plotsBoxplot, NA), widths = c(1, 0.2),
   nrow = 1, common.legend = FALSE
 )
 
@@ -391,11 +481,42 @@ plotsAge <- ggarrange(
 )
 
 finalPlots <- ggarrange(
-  plotlist = list(PlotsBoxplots, plotsAge, PlotsRCSAll, PlotsRWIAll, PlotsDetrendedAll),
-  ncol = 1, common.legend = FALSE, align = "hv", labels = c("a", "b", "c", "d", "e", "f", "g")
+  plotlist = list(PlotsBoxplots, PlotsRCSAll, PlotsRWIAll, PlotsDetrendedAll, PlotsDetrendedGAMAll),
+  ncol = 1, common.legend = FALSE, align = "hv", labels = c("A", "B", "C", "D", "E", "F", "G")
 )
-finalPlots 
-
-cairo_pdf("detrending_all.pdf", width = 27, height = 25, pointsize = 10)
 finalPlots
+
+cairo_pdf("detrending_all.pdf", width = 20, height = 16, pointsize = 10)
+finalPlots
+dev.off()
+
+finalPlots_age <- ggarrange(
+  plotlist = list(plotsAge, PlotsRCSAll, PlotsRWIAll),
+  ncol = 1, common.legend = FALSE, align = "hv", labels = c("B", "C", "D")
+)
+finalPlots_age
+
+cairo_pdf("detrending_age.pdf", width = 22, height = 12, pointsize = 10)
+finalPlots_age
+dev.off()
+
+
+finalPlots_calender <- ggarrange(
+  plotlist = list(PlotsDetrendedAll, PlotsDetrendedGAMAll),
+  ncol = 1, common.legend = FALSE, align = "hv", labels = c("E", "F", "G")
+)
+finalPlots_calender
+
+cairo_pdf("detrending_calender.pdf", width = 26, height = 8, pointsize = 10)
+finalPlots_calender
+dev.off()
+
+finalPlots_calender1 <- ggarrange(
+  plotlist = list(NA, PlotsBoxplots),
+  ncol = 1, common.legend = FALSE, align = "hv", labels = c("", "A")
+)
+finalPlots_calender1
+
+cairo_pdf("detrending_calender1.pdf", width = 22, height = 8, pointsize = 10)
+finalPlots_calender1
 dev.off()

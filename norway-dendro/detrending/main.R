@@ -18,13 +18,18 @@ source("../dependencies.R")
 # load data
 # Betula nana
 load("../input-data/inputBet.gz") # file: inputBet
+#inputBet$value <- scale(inputBet$value)
 # Cytisus galianoi
 load("../input-data/inputCyt.gz") # file: inputCyt
-# Betula nana
+#inputCyt$value <- scale(inputCyt$value)
+# Salix herbacea
 load("../input-data/inputSal.gz") # file: inputSal
+#inputSal$value <- scale(inputSal$value)
 # Rhododendron ferrugineum
 load("../input-data/inputRho.gz") # file: inputRho
-
+#inputRho$value <- scale(as.numeric(inputRho$value))
+inputRho$value <- as.numeric(inputRho$value)*1000 #convert to micrometers
+mean(inputRho$value, na.rm = TRUE)
 ## Combine Input
 input <- as.data.frame(rbind(
     inputBet,
@@ -44,3 +49,9 @@ source("../constants.R")
 source("../calculate-age.R")
 # calculate trends
 source("../calculate-trends.R")
+
+##
+# plot age trends
+source("../plot-age-trend.R")
+# plot detrending
+source("../detrending-plots.R")
